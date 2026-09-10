@@ -1,29 +1,27 @@
-# ⚽ O Peso do Mando de Campo no Brasileirão (2003-2023)
+# ⚽ Análise do Mando de Campo no Brasileirão
 
-Este é um projeto ponta a ponta de **Engenharia e Análise de Dados** focado em investigar matematicamente o peso da torcida e do mando de campo na era dos pontos corridos do Campeonato Brasileiro. 
+Um dashboard interativo feito em Python para analisar o histórico de vitórias dos times mandantes no Campeonato Brasileiro. 
 
-O objetivo principal foi responder a perguntas reais com dados empíricos: a vantagem de jogar em casa é um mito? A ausência de público na pandemia alterou a estatística? Quem foram os visitantes mais mortais da história?
+O grande objetivo deste projeto é provar, com dados, que **as médias gerais de um campeonato muitas vezes escondem realidades individuais**. Para isso, criei um painel onde é possível comparar o comportamento geral da liga com o desempenho específico de cada clube.
 
-## 📊 Principais Descobertas (Insights)
+## 📊 Principais Insights da Análise
 
-Através da ingestão de mais de duas décadas de dados e análises com SQL e Python, descobrimos que:
+* **O Outlier de 2012 (São Paulo):** Em 2012, a média de vitórias dos mandantes na liga foi baixíssima (cerca de **40%**). Olhando o gráfico geral, a conclusão seria que jogar em casa não foi vantagem. Mas ao filtrar o **São Paulo**, vemos que o clube teve quase **80% de aproveitamento** em casa.
+* **O Efeito Manada (Cruzeiro 2008 vs. 2014):** O Cruzeiro teve o mesmo desempenho absurdo nesses dois anos (**15 vitórias** em casa). Porém, em 2008, o gráfico nacional subiu porque vários outros clubes também foram fortes. Em 2014, o Cruzeiro foi um caso isolado, provando que um time não move a média do campeonato inteiro.
+* **Efeito Pandemia:** Sem torcida (2020-2021), a taxa média de vitória dos mandantes despencou de **50%** para **43%**.
+* **O Visitante Letal (Corinthians 2017):** A média histórica de vitórias de um time visitante é de 4.7 jogos. O Corinthians de 2017 quebrou essa estatística vencendo 9 jogos fora de casa. Ao roubar tantos pontos dos mandantes, ele ajudou a puxar o gráfico geral daquele ano para baixo, mostrando o impacto de uma anomalia visitante.
 
-1. **O Efeito Pandemia (2020-2021):** Historicamente, os mandantes vencem cerca de 50% dos jogos. Durante a pandemia de Covid-19 (com estádios vazios), a taxa de vitória dos mandantes despencou drasticamente, provando matematicamente que a torcida atua como o "12º jogador".
-2. **A Anomalia de 2017:** Identificamos uma queda brusca de vitórias de mandantes em 2017. Usando consultas SQL avançadas (CTEs), descobrimos que a média histórica de um time jogando fora de casa é de apenas **4.7 vitórias** por campeonato. O Corinthians de 2017 conseguiu **9 vitórias**, vencendo **1.9x mais** que o normal e distorcendo a curva do campeonato.
+## 🛠️ Desafios Técnicos Resolvidos
 
-## 🏗️ Arquitetura e Pipeline de Dados (ETL)
+Durante a construção do projeto, lidei com alguns problemas práticos de engenharia e interface:
 
-O projeto foi estruturado simulando um pipeline clássico de dados:
+1. **Padronização de Dados (Dicionários):** Para melhorar a experiência do usuário, a interface exibe nomes formatados (ex: "São Paulo"). Usei dicionários em Python para mapear e traduzir essas escolhas para o padrão exato que o banco de dados SQL exige (ex: "Sao Paulo"), evitando bugs e consultas vazias.
+2. **Processamento de Imagens em Lote:** A biblioteca de galeria do Streamlit cortava as pontas dos escudos por eles terem formatos diferentes. Em vez de editar os arquivos manualmente, usei a biblioteca **Pillow (PIL)** no Python para adicionar uma margem transparente padrão em todas as imagens automaticamente antes de enviá-las para a tela.
+3. **Imagens Locais e Licenças:** Para evitar que o painel quebre se links externos mudarem, estruturei uma pasta local de *assets* (`img/`) com escudos quadrados e adicionei os devidos créditos de licença (CC BY-NC 4.0) no rodapé da aplicação.
 
-* **Extração (Extract):** Consumo automatizado de uma base de dados pública com o histórico completo de partidas via Python.
-* **Transformação (Transform):** Limpeza dos dados, remoção de colunas irrelevantes e aplicação de regras de negócio (criação da coluna `vencedor` baseada nos placares) utilizando **Pandas**.
-* **Carga (Load):** Criação e inserção dos dados limpos em um banco de dados relacional **SQLite** (`brasileirao.db`).
-* **Análise (Analisys/EDA):** Consumo do banco de dados utilizando consultas **SQL** e renderização do *Data Storytelling* visual com **Matplotlib** e **Seaborn**.
+## 💻 Tecnologias
 
-## 💻 Tecnologias Utilizadas
+* **Linguagem & Banco de Dados:** Python, Pandas, SQLite.
+* **Interface e Gráficos:** Streamlit, Plotly Express (para interatividade).
 
-* **Linguagem:** Python
-* **Manipulação de Dados:** Pandas
-* **Banco de Dados:** SQLite (SQL Padrão)
-* **Visualização:** Seaborn e Matplotlib
-* **Versionamento:** Git e GitHub
+> 🖼️ *Escudos providos por PNG Download sob licença CC BY-NC 4.0.*

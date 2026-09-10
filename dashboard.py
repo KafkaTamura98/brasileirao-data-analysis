@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 import plotly.express as px
+from streamlit_image_select import image_select
+from PIL import Image
 
 # Configuração da página
 st.set_page_config(page_title="Mando de Campo - Brasileirão", page_icon="⚽", layout="wide")
@@ -46,47 +48,94 @@ def carregar_dados(time_filtro):
     df['Taxa_Vitoria_Mandante'] = df['Taxa_Vitoria_Mandante'].round(1)
     return df
 
-# Criando 3 colunas para destacar nossos grandes achados
-col1, col2, col3 = st.columns(3)
+# --- PRIMEIRA LINHA DE INSIGHTS ---
+col1, col2 = st.columns(2)
 
 with col1:
-    st.info("📉 **Efeito Pandemia**\n\nA queda brusca na média da liga (2020-2021).")
+    st.info("📉 **Efeito Pandemia**\n\nA média isolada contra a queda geral.")
     with st.expander("A Média vs. O Seu Time"):
-        st.write("Sem o '12º jogador', a taxa de vitória dos mandantes no Brasileirão despencou de **50%** para quase **43%**. Mas lembre-se: as médias escondem realidades individuais. Será que o **seu time** também sofreu essa queda ou remou contra a maré na pandemia? Use o filtro abaixo para descobrir!")
+        st.write("Sem público (2020-2021), a média de vitórias dos mandantes no campeonato caiu de **50%** para **43%**. Mas será que o seu time acompanhou essa queda geral ou conseguiu transformar o estádio vazio em uma fortaleza? Use o filtro abaixo para comparar os números absolutos!")
 
 with col2:
-    st.success("🏆 **Pico de 2008**\n\nO 'Efeito Manada' liderado pelo Cruzeiro.")
+    st.success("🏆 **O Efeito Manada**\n\nCruzeiro: 2008 vs. 2014.")
     with st.expander("A Média vs. O Seu Time"):
-        st.write("Em 2008, o Cruzeiro ganhou **15 jogos** em casa. Como outros times também foram implacáveis, a média da liga disparou. Curiosidade: em 2014, o Cruzeiro repetiu a façanha (15 vitórias), mas como o resto da liga foi mediano, o gráfico geral nem se moveu. Um time excelente não muda a média sozinho!")
+        st.write("O Cruzeiro venceu **15 jogos** em casa em 2008 e em 2014 (quase 80% de aproveitamento). Em 2008, o gráfico nacional subiu porque outros times também foram bem. Em 2014, o Cruzeiro brilhou sozinho, e a média da liga ficou estagnada. Um time isolado não move a média.")
+
+# --- SEGUNDA LINHA DE INSIGHTS ---
+col3, col4 = st.columns(2)
 
 with col3:
-    st.warning("⚠️ **Anomalia de 2017**\n\nO visitante letal que derrubou a estatística.")
+    st.warning("⚠️ **O Outlier Solitário**\n\nO caso do São Paulo em 2012.")
     with st.expander("A Média vs. O Seu Time"):
-        st.write("A média histórica de um visitante é vencer **4.7 jogos**. O Corinthians de 2017 venceu incríveis **9 jogos** fora de casa (quase o dobro!). Ao dominar como visitante, ele 'roubou' os pontos dos donos da casa, puxando o gráfico geral dos mandantes para baixo.")
+        st.write("Em 2012, a média nacional de vitórias dos mandantes foi muito baixa, beirando os **40%**. Parece que ninguém ganhou em casa naquele ano. Mas ao filtrar o **São Paulo**, vemos que ele venceu **quase 80%** dos jogos como mandante. A média escondeu essa realidade individual.")
+
+with col4:
+    st.error("🦅 **O Visitante Letal**\n\nA anomalia do Corinthians em 2017.")
+    with st.expander("A Média vs. O Seu Time"):
+        st.write("A média histórica de vitórias de um time visitante no Brasileirão é de **4.7 jogos** por ano. Em 2017, o Corinthians venceu incríveis **9 jogos** fora de casa. Ao roubar tantos pontos dos donos da casa, ele ajudou a puxar o gráfico geral de vitórias dos mandantes para baixo.")
 
 st.divider()
 
-# --- NOVO: FILTRO DE TIMES COM MAPEAMENTO ---
+# --- NOVO: FILTRO DE TIMES COM ESCUDOS CLICÁVEIS ---
 st.subheader("🔎 Análise Individual por Clube")
 
-# Dicionário: A chave é o que aparece na tela (bonito), o valor é o que o banco entende
+# Nossos nomes visuais na tela
+times_nomes = ["Geral", "Flamengo", "Corinthians", "São Paulo", "Palmeiras", "Cruzeiro"]
+
+# Nossos arquivos locais originais
+caminhos_imagens = [
+    "img/cbf.png",
+    "img/flamengo.png",
+    "img/corinthians.png",
+    "img/saopaulo.png",
+    "img/palmeiras.png",
+    "img/cruzeiro.png"
+]
+
+# --- NOVA MÁGICA: Processando e Salvando as imagens ---
+def adicionar_margem(caminho):
+    img = Image.open(caminho).convert("RGBA")
+    largura, altura = img.size
+    margem = 60 # 60 pixels de borda transparente
+    
+    # Cria a nova "tela" transparente e cola o escudo
+    nova_img = Image.new("RGBA", (largura + margem*2, altura + margem*2), (0, 0, 0, 0))
+    nova_img.paste(img, (margem, margem), img)
+    
+    # Gera um novo nome de arquivo (ex: "img/cbf_formatado.png")
+    novo_caminho = caminho.replace(".png", "_formatado.png")
+    
+    # Salva a imagem fisicamente na sua pasta img
+    nova_img.save(novo_caminho, format="PNG")
+    
+    return novo_caminho # Devolvemos apenas o texto do caminho!
+
+# Aplicamos a função (isso vai criar 6 novos arquivos na sua pasta img)
+caminhos_com_borda = [adicionar_margem(caminho) for caminho in caminhos_imagens]
+
+# Passamos os CAMINHOS (textos) para a galeria, evitando o erro de JPEG
+indice_selecionado = image_select(
+    label="Selecione um escudo para analisar o time:",
+    images=caminhos_com_borda, 
+    captions=times_nomes,
+    return_value="index" 
+)
+
+# Descobrimos qual time foi clicado com base no número da posição
+time_escolhido_tela = times_nomes[indice_selecionado]
+
+# O nosso famoso dicionário tradutor (com um ajuste para o 'Geral')
 mapa_times = {
-    "Geral (Todos os Times)": "Geral (Todos os Times)",
+    "Geral": "Geral (Todos os Times)",
     "Flamengo": "Flamengo",
     "Corinthians": "Corinthians",
-    "São Paulo": "Sao Paulo",  # <-- A nossa tradução mágica aqui!
+    "São Paulo": "Sao Paulo",
     "Palmeiras": "Palmeiras",
     "Cruzeiro": "Cruzeiro"
 }
 
-# O Streamlit extrai e mostra apenas os nomes bonitos (as chaves do dicionário)
-time_selecionado = st.selectbox(
-    "Selecione um time para ver o desempenho dele:", 
-    list(mapa_times.keys())
-)
-
-# Descobrimos qual é o nome "feio" correspondente e enviamos ele para a função do banco
-nome_para_banco = mapa_times[time_selecionado]
+# Traduzimos e enviamos para o banco de dados
+nome_para_banco = mapa_times[time_escolhido_tela]
 df_grafico = carregar_dados(nome_para_banco)
 
 st.divider()

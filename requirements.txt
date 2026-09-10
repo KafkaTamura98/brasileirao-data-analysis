@@ -3,3 +3,4 @@ matplotlib
 seaborn
 streamlit
 plotly
+streamlit-image-select
